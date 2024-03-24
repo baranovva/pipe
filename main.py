@@ -23,7 +23,7 @@ def calculate():
         is_gaz_external = False
     else:
         is_gaz_external = True
-    if path_internal == 'water':
+    if path_internal in ['water', 'oil']:
         is_gaz_internal = False
     else:
         is_gaz_internal = True
@@ -254,7 +254,7 @@ entry_path_external.current(1)
 
 label_path_internal = tk.Label(root, text="Внутренняя жидкость")
 label_path_internal.grid(row=13, column=0)
-entry_path_internal = ttk.Combobox(root, values=["water", "air"])
+entry_path_internal = ttk.Combobox(root, values=["water", "air", "oil"])
 entry_path_internal.grid(row=13, column=1)
 entry_path_internal.current(0)
 
