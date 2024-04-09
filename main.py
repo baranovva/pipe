@@ -77,9 +77,14 @@ def calculate():
 
     Re_in = material_in_avg.ro * v_in * d_in / material_in_avg.Mu
     Re_external = material_external.ro * v_external * d_external / material_external.Mu  # Re для внешнего течения
-
-    avg_Nu_external = Nu.NuExternal(Re=Re_external, Pr=material_external.Pr,
-                                    is_gaz=is_gaz_external).calculate()  # Уонг стр 72
+    if use_natural_convection.get():
+        if is_gaz_external:
+            beta = 1/(t_external + 273)
+        avg_Nu_external = Nu.NuExternal(Re=Re_external, Pr=material_external.Pr,
+                                        is_gaz=is_gaz_external).calculate_natural(beta, delta_T_ln, d_external, material_external.Mu/material_external.ro)  
+    else:
+        avg_Nu_external = Nu.NuExternal(Re=Re_external, Pr=material_external.Pr,
+                                        is_gaz=is_gaz_external).calculate()  # Уонг стр 72
     a_external_conv = a(nusselt=avg_Nu_external, lambd=material_external.lambd, d=d_external)
 
     a_external_rad = 0.
@@ -168,7 +173,7 @@ def calculate():
             file.write(f'Длина трубы: {l[0]:.5} м\n')
             file.write(f'Перепад давления: {delta_p[0]:.5} Па')
 
-    write_to_file()
+    #write_to_file()
 
 
 root = tk.Tk()
@@ -258,13 +263,28 @@ entry_path_internal = ttk.Combobox(root, values=["water", "air", "oil"])
 entry_path_internal.grid(row=13, column=1)
 entry_path_internal.current(0)
 
+
+use_natural_convection = BooleanVar()
+use_natural_convection.set(False)
+
+def toggle_external_speed():
+    if use_natural_convection.get():
+        entry_v_external.configure(state='disabled')
+    else:
+        entry_v_external.configure(state='normal')
+
+
+check_use_natural_convection = Checkbutton(root, text="Использовать естественную конвекцию", variable=use_natural_convection, command=toggle_external_speed)
+check_use_natural_convection.grid(row=14, columnspan=2)
+
 button_calculate = tk.Button(root, text="Calculate", command=calculate)
-button_calculate.grid(row=14, columnspan=2)
+button_calculate.grid(row=15, columnspan=2)
 
 output_text = scrolledtext.ScrolledText(root, width=50, height=16, wrap=tk.WORD)
-output_text.grid(row=15, columnspan=2)
+output_text.grid(row=16, columnspan=2)
 
 button_clear = tk.Button(root, text="About", command=show_about)
-button_clear.grid(row=16, columnspan=2)
+button_clear.grid(row=17, columnspan=2)
+
 
 root.mainloop()

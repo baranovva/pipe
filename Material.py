@@ -104,8 +104,8 @@ class Material:
             self.ro *= p
         self.c_p = material[:, 1]
         self.lambd = material[:, 2]
-        self.Pr = material[:, 3]
-        self.Mu = material[:, 4]
+        self.Mu = material[:, 3]
+        self.Pr = material[:, 4]
 
     def interpolate(self, T1, T2, Val1, Val2, T):
         return Val1 + (Val2 - Val1) / (T2 - T1) * (T - T1)

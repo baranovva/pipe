@@ -12,6 +12,7 @@ class Nu:
             self.Pr = Pr
             self.is_gaz = is_gaz
 
+
         def __Nu_circle_decorator(func):
             @wraps(func)
             def wrapper(self):
@@ -47,12 +48,23 @@ class Nu:
             return 1
 
         def calculate(self):
+
             if self.is_gaz:
                 # если внешняя среда - газ
                 return self.Nu_circle_gaz()
             else:
                 # если внешняя среда - жидкость
                 return 0.43 + self.Nu_circle_fluid()
+
+        def calculate_natural(self, beta, delta_T_ln, D, nu):
+            g = 9.81 
+            Gr = g * beta * delta_T_ln * D**3 / nu**2
+            Ra = Gr * self.Pr
+            if Ra <= 10**9:
+                return 0.8 * (Gr * self.Pr)**(1/4) * (1 + (1 + 1/(self.Pr)**0.5)**2)**(-1/4)
+            else:
+                phi = (self.Pr**(1/6)/(1 + 0.494 * self.Pr**(2/3)))**(2/5)
+                return 0.0246 * Ra**(2/5) * phi
 
     class NuInternal:
         # Теплообмен при вынужденном движении в цилиндрических трубах. Уонг, стр 68
@@ -64,6 +76,8 @@ class Nu:
             self.Mu_wall = Mu_wall
 
         def calculate(self):
+
+
             if self.is_gaz and self.Re > 2000:
                 # если среда - газ
                 return 0.023 * (self.Re ** 0.8) * (self.Pr ** 0.4)
