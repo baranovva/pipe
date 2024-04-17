@@ -71,6 +71,7 @@ def calculate():
 
     # свойства материалов при заданной температуре и давлении
     material_external = Material(T=t_external, p=p_external, path=path_external)
+    print(t_external, p_external, path_external)
     material_in_wall = Material(T=t_wall, p=p_inlet, path=path_internal)
     material_in_avg = Material(T=t_avg, p=p_inlet, path=path_internal)
     material_in_inlet = Material(T=t_inlet, p=p_inlet, path=path_internal)
@@ -78,10 +79,9 @@ def calculate():
     Re_in = material_in_avg.ro * v_in * d_in / material_in_avg.Mu
     Re_external = material_external.ro * v_external * d_external / material_external.Mu  # Re для внешнего течения
     if use_natural_convection.get():
-        if is_gaz_external:
-            beta = 1/(t_external + 273)
         avg_Nu_external = Nu.NuExternal(Re=Re_external, Pr=material_external.Pr,
-                                        is_gaz=is_gaz_external).calculate_natural(beta, delta_T_ln, d_external, material_external.Mu/material_external.ro)  
+                                        is_gaz=is_gaz_external).calculate_natural(material_external.beta, delta_T_ln, d_external, material_external.Mu/material_external.ro)  
+        print(material_external.beta, delta_T_ln, d_external, material_external.Mu, material_external.ro)
     else:
         avg_Nu_external = Nu.NuExternal(Re=Re_external, Pr=material_external.Pr,
                                         is_gaz=is_gaz_external).calculate()  # Уонг стр 72

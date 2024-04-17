@@ -7,6 +7,7 @@ class Material:
         self.T = T
         self.p = p
         self.path = "data/" + path + ".csv"
+        # print(self.path)
 
         index_df = pd.read_csv(self.path, header=0, sep=",", usecols=[0])
         index = np.array(index_df.iloc[:, 0])
@@ -44,12 +45,13 @@ class Material:
                             - 3.10214433e-11 * self.T**2
                             + 1.80688009e-14 * self.T**3
                             - 4.68045260e-18 * self.T**4,
+                            1/(self.T + 273)
                         ]
                     ]
                 )
             elif self.path == "data/oil.csv":
                 data = pd.read_csv(self.path)
-                T1, T2, index1, index2 = self.find_closest_temperatures(T, data)
+                T1, T2, index1, index2 = self.find_closest_temperatures(self.T, data)
                 material = np.array(
                     [
                         [
@@ -62,6 +64,9 @@ class Material:
                     ]
                 )
             else:
+                data = pd.read_csv(self.path)
+                T1, T2, index1, index2 = self.find_closest_temperatures(T, data)
+
                 material = np.array(
                     [
                         [
@@ -91,21 +96,26 @@ class Material:
                             + 8.57180627e-10 * self.T**4
                             - 1.00928731e-11 * self.T**5
                             + 6.44669496e-14 * self.T**6
-                            - 1.68986461e-16 * self.T**7,]
+                            - 1.68986461e-16 * self.T**7,
+                            self.interpolate(T1, T2, Val1=data["beta"][index1], Val2=data["beta"][index2], T=T)]
                     ]
                 )
         else:
             index = np.where(index == round(T))[0]
-            material_df = pd.read_csv(self.path, header=0, sep=",", usecols=range(1, 6), skiprows=index[0], nrows=1)
+            material_df = pd.read_csv(self.path, header=0, sep=",", usecols=range(1, 7), skiprows=index[0], nrows=1)
             material = np.array(material_df)
 
-        self.ro = material[:, 0]
-        if self.path == "data/air.csv":
-            self.ro *= p
         self.c_p = material[:, 1]
         self.lambd = material[:, 2]
         self.Mu = material[:, 3]
         self.Pr = material[:, 4]
+        if material.shape[1] > 5:
+            self.beta = material[:, 5]
+        
+        self.ro = material[:, 0]
+        if self.path == "data/air.csv":
+            self.ro *= p
+            self.beta = 1/(self.T + 273)
 
     def interpolate(self, T1, T2, Val1, Val2, T):
         return Val1 + (Val2 - Val1) / (T2 - T1) * (T - T1)
@@ -124,21 +134,26 @@ class Material:
 
 
 if __name__ == "__main__":
-    m = Material(T=85, p=5, path="water")
-    print(m.ro)
-    print(m.c_p)
-    print(m.lambd)
-    print(m.Pr)
-    print(m.Mu)
-    m = Material(T=85, p=5, path="air")
-    print(m.ro)
-    print(m.c_p)
-    print(m.lambd)
-    print(m.Pr)
-    print(m.Mu)
+    m = Material(T=0, p=1, path="water")
+    print("water")
+    print(f"ro {m.ro}")
+    print(f"c_p {m.c_p}")
+    print(f"lambda {m.lambd}")
+    print(f"Pr {m.Pr}")
+    print(f"Mu {m.Mu}")
+    print(f"beta {m.beta}")
+    m = Material(T=0, p=1, path="air")
+    print("air")
+    print(f"ro {m.ro}")
+    print(f"c_p {m.c_p}")
+    print(f"lambda {m.lambd}")
+    print(f"Pr {m.Pr}")
+    print(f"Mu {m.Mu}")
+    print(f"beta {m.beta}")
     m = Material(T=85, p=5, path="oil")
-    print(m.ro)
-    print(m.c_p)
-    print(m.lambd)
-    print(m.Pr)
-    print(m.Mu)
+    print("oil")
+    print(f"ro {m.ro}")
+    print(f"c_p {m.c_p}")
+    print(f"lambda {m.lambd}")
+    print(f"Pr {m.Pr}")
+    print(f"Mu {m.Mu}")
