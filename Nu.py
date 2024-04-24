@@ -60,6 +60,11 @@ class Nu:
             g = 9.81 
             Gr = g * beta * delta_T_ln * D**3 / nu**2
             Ra = Gr * self.Pr
+            # print("beta", beta)
+            # print('deltaT', delta_T_ln)
+            # print("nu", nu)
+            # print("Gr", Gr)
+            # print("Ra", Ra)
             if Ra <= 10**9:
                 return 0.8 * (Gr * self.Pr)**(1/4) * (1 + (1 + 1/(self.Pr)**0.5)**2)**(-1/4)
             else:

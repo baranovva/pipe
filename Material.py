@@ -58,8 +58,22 @@ class Material:
                             self.interpolate(T1, T2, Val1=data["ro"][index1], Val2=data["ro"][index2], T=T),
                             self.interpolate(T1, T2, Val1=data["c_p"][index1], Val2=data["c_p"][index2], T=T),
                             self.interpolate(T1, T2, Val1=data["lambda1"][index1], Val2=data["lambda1"][index2], T=T),
-                            self.interpolate(T1, T2, Val1=data["Mu"][index1], Val2=data["Mu"][index2], T=T),
                             self.interpolate(T1, T2, Val1=data["Pr"][index1], Val2=data["Pr"][index2], T=T),
+                            self.interpolate(T1, T2, Val1=data["Mu"][index1], Val2=data["Mu"][index2], T=T),
+                        ]
+                    ]
+                )
+            elif self.path == "data/methane.csv":
+                data = pd.read_csv(self.path)
+                T1, T2, index1, index2 = self.find_closest_temperatures(self.T, data)
+                material = np.array(
+                    [
+                        [
+                            self.interpolate(T1, T2, Val1=data["ro"][index1], Val2=data["ro"][index2], T=T),
+                            self.interpolate(T1, T2, Val1=data["c_p"][index1], Val2=data["c_p"][index2], T=T),
+                            self.interpolate(T1, T2, Val1=data["lambda"][index1], Val2=data["lambda"][index2], T=T),
+                            self.interpolate(T1, T2, Val1=data["Pr"][index1], Val2=data["Pr"][index2], T=T),
+                            self.interpolate(T1, T2, Val1=data["Mu"][index1], Val2=data["Mu"][index2], T=T),
                         ]
                     ]
                 )
@@ -107,8 +121,8 @@ class Material:
 
         self.c_p = material[:, 1]
         self.lambd = material[:, 2]
-        self.Mu = material[:, 3]
-        self.Pr = material[:, 4]
+        self.Mu = material[:, 4]
+        self.Pr = material[:, 3]
         if material.shape[1] > 5:
             self.beta = material[:, 5]
         
@@ -152,6 +166,13 @@ if __name__ == "__main__":
     print(f"beta {m.beta}")
     m = Material(T=85, p=5, path="oil")
     print("oil")
+    print(f"ro {m.ro}")
+    print(f"c_p {m.c_p}")
+    print(f"lambda {m.lambd}")
+    print(f"Pr {m.Pr}")
+    print(f"Mu {m.Mu}")
+    m = Material(T=85, p=5, path="methane")
+    print("methane")
     print(f"ro {m.ro}")
     print(f"c_p {m.c_p}")
     print(f"lambda {m.lambd}")

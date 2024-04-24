@@ -10,6 +10,15 @@ from radiantion import radiation
 def a(nusselt: float, lambd: float, d: float):
     return nusselt * lambd / d
 
+def on_internal_fluid_change(event):
+    if entry_path_internal.get() == 'methane':
+        entry_p_inlet.delete(0, tk.END)
+        entry_p_inlet.insert(0, '100')
+        entry_p_inlet.configure(state='readonly')  
+    else:
+        entry_p_inlet.configure(state='normal') 
+        entry_p_inlet.delete(0, tk.END)
+        entry_p_inlet.insert(0, '1')
 
 def calculate():
     path_external = entry_path_external.get()
@@ -71,7 +80,6 @@ def calculate():
 
     # свойства материалов при заданной температуре и давлении
     material_external = Material(T=t_external, p=p_external, path=path_external)
-    print(t_external, p_external, path_external)
     material_in_wall = Material(T=t_wall, p=p_inlet, path=path_internal)
     material_in_avg = Material(T=t_avg, p=p_inlet, path=path_internal)
     material_in_inlet = Material(T=t_inlet, p=p_inlet, path=path_internal)
@@ -81,7 +89,7 @@ def calculate():
     if use_natural_convection.get():
         avg_Nu_external = Nu.NuExternal(Re=Re_external, Pr=material_external.Pr,
                                         is_gaz=is_gaz_external).calculate_natural(material_external.beta, delta_T_ln, d_external, material_external.Mu/material_external.ro)  
-        print(material_external.beta, delta_T_ln, d_external, material_external.Mu, material_external.ro)
+        # print(material_external.beta, delta_T_ln, d_external, material_external.Mu, material_external.ro)
     else:
         avg_Nu_external = Nu.NuExternal(Re=Re_external, Pr=material_external.Pr,
                                         is_gaz=is_gaz_external).calculate()  # Уонг стр 72
@@ -101,7 +109,10 @@ def calculate():
 
     l = material_in_inlet.ro * v_in * material_in_inlet.c_p * pi * ((d_in / 2) ** 2) * (t_inlet - t_out) / (
             k_l * delta_T_ln)  # из уравнения теплового баланса
-    delta_p = 0.184 / (Re_in ** 0.2) * (l / d_in) * (0.5 * material_in_inlet.ro * v_in ** 2)
+    if Re_in > 2000:
+        delta_p = 0.184 / (Re_in ** 0.2) * (l / d_in) * (0.5 * material_in_inlet.ro * v_in ** 2) # турб
+    else:
+        delta_p = 64/Re_in * (l / d_in) * (0.5 * material_in_inlet.ro * v_in ** 2) # ламинар
 
     output_text.delete(1.0, tk.END)
     output_text.insert(tk.END, f'Re external: {Re_external[0]:.5}\n')
@@ -259,9 +270,10 @@ entry_path_external.current(1)
 
 label_path_internal = tk.Label(root, text="Внутренняя жидкость")
 label_path_internal.grid(row=13, column=0)
-entry_path_internal = ttk.Combobox(root, values=["water", "air", "oil"])
+entry_path_internal = ttk.Combobox(root, values=["water", "air", "oil", "methane"])
 entry_path_internal.grid(row=13, column=1)
 entry_path_internal.current(0)
+entry_path_internal.bind('<<ComboboxSelected>>', on_internal_fluid_change)
 
 
 use_natural_convection = BooleanVar()
